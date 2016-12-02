@@ -1,6 +1,9 @@
 package com.x.simpleaudiorecorder.application;
 
 import android.app.Application;
+import android.widget.Toast;
+
+import com.x.simpleaudiorecorder.R;
 
 import org.androidannotations.annotations.EApplication;
 
@@ -22,7 +25,10 @@ public class MApplication extends Application {
             }
             @Override
             public void onFailure(Exception error) {
-
+                error.printStackTrace();
+                Toast.makeText(MApplication.this
+                        , R.string.loading_converter_error
+                        , Toast.LENGTH_LONG).show();
             }
         });
     }

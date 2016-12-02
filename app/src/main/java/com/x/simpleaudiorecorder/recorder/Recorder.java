@@ -80,7 +80,7 @@ public class Recorder {
         void onStart();
         void onRecord();
         void onSuccess(RecordFileInfo info);
-        void onError();
+        void onError(Exception e);
     }
 
     private class RecordThread extends Thread {
@@ -102,6 +102,9 @@ public class Recorder {
                     mSaveFile.createNewFile();
                 } catch (IOException e) {
                     e.printStackTrace();
+                    if(null != mIoRecord){
+                        mIoRecord.onError(e);
+                    }
                 }
             }
 
@@ -125,8 +128,14 @@ public class Recorder {
 
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
+                if(null != mIoRecord){
+                    mIoRecord.onError(e);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
+                if(null != mIoRecord){
+                    mIoRecord.onError(e);
+                }
             }
 
             byte[] bufferData = new byte[mMinBufferSize];
@@ -140,6 +149,9 @@ public class Recorder {
                         mSaveRandomAccessFile.write(bufferData);
                     } catch (IOException e) {
                         e.printStackTrace();
+                        if(null != mIoRecord){
+                            mIoRecord.onError(e);
+                        }
                     }
                 }
 
@@ -165,6 +177,9 @@ public class Recorder {
                 mSaveRandomAccessFile.close();
             } catch (IOException e) {
                 e.printStackTrace();
+                if(null != mIoRecord){
+                    mIoRecord.onError(e);
+                }
             }
         }
 

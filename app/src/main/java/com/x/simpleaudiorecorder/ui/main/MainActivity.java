@@ -4,10 +4,12 @@ import android.Manifest;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcelable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.jorgecastilloprz.FABProgressCircle;
 import com.github.jorgecastilloprz.listeners.FABProgressListener;
@@ -42,15 +44,19 @@ import rx.schedulers.Schedulers;
 public class MainActivity extends AppCompatActivity {
 
     private static final int MSG_PERMISSION_ALERT = 0;
+
     private static final int MSG_RECORD_START = 1;
     private static final int MSG_RECORD_ING = 2;
+
     private static final int MSG_RECORD_SUCCESS = 3;
     private static final int MSG_RECORD_ERROR = 4;
+
     private static final int MSG_CONVERT_BEIGIN = 5;
     private static final int MSG_CONVERT_SUCCESS = 6;
     private static final int MSG_CONVERT_ERROR = 7;
 
-    private static final int TIME_TO_STOP = 3000;   //不说话3秒钟自动停止录音
+    private static final int TIME_TO_STOP = 3000;   //不说话TIME_TO_STOP ms 后自动停止录音
+
     private static final int THREADHOLD = 1000;     //不说话定义为音量小于THREADHOLD
 
     private static final String KEY_RECORD_FILE_INFO = "file_info";
@@ -78,6 +84,8 @@ public class MainActivity extends AppCompatActivity {
     void init(){
         mRxPermissions = new RxPermissions(this);
 
+        mAutoStopper = new AutoStopper();
+
         mRecorder = new Recorder();
         mIonRecord = new Recorder.IORecord() {
             @Override
@@ -94,9 +102,7 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(RecordFileInfo info) {
                 Message message = new Message();
                 message.what = MSG_RECORD_SUCCESS;
-                Bundle bundle = new Bundle();
-                bundle.putParcelable(KEY_RECORD_FILE_INFO, info);
-                message.setData(bundle);
+                setMsgData(message, info);
                 mHandler.sendMessage(message);
 
                 mHandler.sendEmptyMessage(MSG_CONVERT_BEIGIN);
@@ -108,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onError() {
+            public void onError(Exception e) {
                 mHandler.sendEmptyMessage(MSG_RECORD_ERROR);
             }
         };
@@ -122,9 +128,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Message message = new Message();
                 message.what = MSG_CONVERT_SUCCESS;
-                Bundle bundle = new Bundle();
-                bundle.putParcelable(KEY_RECORD_FILE_INFO, info);
-                message.setData(bundle);
+                setMsgData(message, info);
                 mHandler.sendMessage(message);
             }
             @Override
@@ -159,8 +163,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        mStopTimeHint.setText(String.format(getString(R.string.stop_record_time_hint), TIME_TO_STOP / 1000));
-        mAutoStopper = new AutoStopper();
+        mStopTimeHint.setText(String.format(getString(R.string.stop_record_time_hint)
+                , TIME_TO_STOP / 1000));
     }
 
     @Override
@@ -180,7 +184,6 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void call(Boolean ok) {
                             if(ok){
-
                                 File saveFile = new File(FileUtils.getExternalCacheDir(MainActivity.this)
                                         , "record_" + System.currentTimeMillis() + ".wav");
                                 mRecorder.recordInit(mIonRecord);
@@ -217,6 +220,12 @@ public class MainActivity extends AppCompatActivity {
                         mRecordResultView.refresh(recordFileInfos);
                     }
                 });
+    }
+
+    private void setMsgData(Message message, Parcelable data){
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(KEY_RECORD_FILE_INFO, data);
+        message.setData(bundle);
     }
 
     private Handler mHandler = new Handler(){
@@ -262,6 +271,7 @@ public class MainActivity extends AppCompatActivity {
                     mRecordResultView.add(info);
                     break;
                 case MSG_CONVERT_ERROR:
+                    Toast.makeText(MainActivity.this, R.string.conver_error, Toast.LENGTH_LONG).show();
                     break;
                 default:
                     break;

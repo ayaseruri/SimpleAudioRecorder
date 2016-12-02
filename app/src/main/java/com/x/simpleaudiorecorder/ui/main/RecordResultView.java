@@ -52,13 +52,8 @@ public class RecordResultView extends RecyclerView {
     @UiThread
     public void add(RecordFileInfo info){
         RecordResultAdapter adapter = (RecordResultAdapter) getAdapter();
-        adapter.add(info);
-    }
-
-    @UiThread
-    public void add(List<RecordFileInfo> infos){
-        RecordResultAdapter adapter = (RecordResultAdapter) getAdapter();
-        adapter.add(infos);
+        adapter.addHead(info);
+        smoothScrollToPosition(0);
     }
 
     @UiThread
@@ -94,9 +89,9 @@ public class RecordResultView extends RecyclerView {
             });
         }
 
-        public void add(RecordFileInfo info){
-            mFileInfos.add(info);
-            notifyItemInserted(mFileInfos.size());
+        public void addHead(RecordFileInfo info){
+            mFileInfos.add(0, info);
+            notifyItemInserted(0);
         }
 
         public void add(List<RecordFileInfo> infos){

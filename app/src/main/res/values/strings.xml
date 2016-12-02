@@ -3,6 +3,8 @@
     <string name="record_permission_alert_title">需要权限</string>
     <string name="record_permission_alert_detail">请您在\"设置\"-\"应用\"中为\"SimpleAudioRecorder\"开启\n\"录音\"以及\"存储\"权限</string>
     <string name="stop_record_time_hint">开始录音后,如果您%d秒未内未说话,录音将自动停止</string>
+    <string name="loading_converter_error">加载转换库失败,您的录音将仅保存为wav格式</string>
+    <string name="conver_error">将录音转换为flac格式失败</string>
     <string name="settings">设置</string>
     <string name="cancle">取消</string>
 </resources>

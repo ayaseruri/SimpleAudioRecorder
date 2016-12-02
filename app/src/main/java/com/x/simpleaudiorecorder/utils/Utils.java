@@ -10,6 +10,7 @@ import android.provider.Settings;
  */
 
 public class Utils {
+
     public static void startAppSysSetting(Context context){
         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
         intent.setData(Uri.parse("package:" + context.getPackageName()));

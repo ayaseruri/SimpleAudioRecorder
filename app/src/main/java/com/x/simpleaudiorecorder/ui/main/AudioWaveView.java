@@ -3,6 +3,7 @@ package com.x.simpleaudiorecorder.ui.main;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Point;
 import android.os.Handler;
 import android.os.Message;
@@ -45,6 +46,7 @@ public class AudioWaveView extends View {
     private Timer mTimer;
     private TimerTask mTimerTask;
     private Paint mPaint;
+    private Path mPath;
     private ArrayList<Point> mPoints;
     private int mThreadHold = DEFAULT_THREADHOLD;
 
@@ -58,8 +60,11 @@ public class AudioWaveView extends View {
 
     @AfterViews
     void init(){
+        mPath = new Path();
+
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
+        mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeWidth(STROKE_WIDTH);
     }
 
@@ -145,15 +150,29 @@ public class AudioWaveView extends View {
             }
         }
 
-        mPaint.setColor(mWaveColor);
-        for (int i = 0; i < mPoints.size() - 1; i ++){
-            canvas.drawLine(mPoints.get(i).x, mPoints.get(i).y, mPoints.get(i + 1).x
-                    , mPoints.get(i + 1).y, mPaint);
+        mPath.reset();
+        for (int i = 0; i < mPoints.size(); i ++){
+            if(0 == i){
+                mPath.moveTo(mPoints.get(i).x, mPoints.get(i).y);
+            }else {
+                mPath.lineTo(mPoints.get(i).x, mPoints.get(i).y);
+            }
         }
 
+        mPaint.setColor(mWaveColor);
+        canvas.drawPath(mPath, mPaint);
+
         mPaint.setColor(mThreadHoldColor);
-        canvas.drawLine(0, getY(mThreadHold), getWidth(), getY(mThreadHold), mPaint);
-        canvas.drawLine(0, getY(-mThreadHold), getWidth(), getY(-mThreadHold), mPaint);
+
+        mPath.reset();
+        mPath.moveTo(0, getY(mThreadHold));
+        mPath.lineTo(getWidth(), getY(mThreadHold));
+        canvas.drawPath(mPath, mPaint);
+
+        mPath.reset();
+        mPath.moveTo(0, getY(-mThreadHold));
+        mPath.lineTo(getWidth(), getY(-mThreadHold));
+        canvas.drawPath(mPath, mPaint);
     }
 
     @Override
