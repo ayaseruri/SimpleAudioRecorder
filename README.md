@@ -12,9 +12,15 @@
 ## demo
 * 下载 [APK](https://github.com/ayaseruri/SimpleAudioRecorder/blob/master/demo/app-debug.apk?raw=true)
 * 截图(两张)(图片较大,请耐心等待)
+<br />
+
 ![Screenshot1](https://github.com/ayaseruri/SimpleAudioRecorder/blob/master/demo/Screenshot1.png?raw=true)
+<br />
+
 ![Screenshot2](https://github.com/ayaseruri/SimpleAudioRecorder/blob/master/demo/Screenshot2.png?raw=true)
 * gif展示(一张)(图片较大,请耐心等待):
+<br />
+
 ![gif](https://github.com/ayaseruri/SimpleAudioRecorder/blob/master/demo/demo.gif?raw=true)
 
 ## 实现思路
