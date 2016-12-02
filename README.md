@@ -10,9 +10,12 @@
 * 录音结果可以直接点击播放按钮进行播放
 
 ## demo
-* 下载 [APK]()
-* git展示(图片较大,请耐心等待):
-  
+* 下载 [APK](https://github.com/ayaseruri/SimpleAudioRecorder/blob/master/demo/app-debug.apk?raw=true)
+* 截图(两张)(图片较大,请耐心等待)
+![Screenshot1](https://github.com/ayaseruri/SimpleAudioRecorder/blob/master/demo/Screenshot1.png?raw=true)
+![Screenshot2](https://github.com/ayaseruri/SimpleAudioRecorder/blob/master/demo/Screenshot2.png?raw=true)
+* gif展示(一张)(图片较大,请耐心等待):
+![gif](https://github.com/ayaseruri/SimpleAudioRecorder/blob/master/demo/demo.gif?raw=true)
 
 ## 实现思路
 * ### 波形绘制WaveView
