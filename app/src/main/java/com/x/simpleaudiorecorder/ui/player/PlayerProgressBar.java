@@ -11,6 +11,7 @@ import com.x.simpleaudiorecorder.player.Player;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EView;
 
+import java.lang.ref.WeakReference;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -40,21 +41,31 @@ public class PlayerProgressBar extends AppCompatSeekBar {
         setMax(mPlayer.getDuration());
     }
 
-    private Handler mHandler = new Handler(){
+    private Handler mHandler = new UIHandler(this);
+    private static class UIHandler extends Handler{
+        WeakReference<PlayerProgressBar> progressBarWeakReference;
+
+        public UIHandler(PlayerProgressBar bar) {
+            progressBarWeakReference = new WeakReference<>(bar);
+        }
+
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what){
-                case MSG_UPDATE_UI:
-                    if(mPlayer.isPlaying()){
-                        setProgress(mPlayer.getCurrentPosition());
-                    }
-                    break;
-                default:
-                    break;
+            PlayerProgressBar bar = progressBarWeakReference.get();
+            if(null != bar){
+                switch (msg.what){
+                    case MSG_UPDATE_UI:
+                        if(bar.mPlayer.isPlaying()){
+                            bar.setProgress(bar.mPlayer.getCurrentPosition());
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
         }
-    };
+    }
 
     public void progressStart(){
         mTimer = new Timer();

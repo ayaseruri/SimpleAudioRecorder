@@ -68,19 +68,30 @@ public class AudioWaveView extends View {
         mPaint.setStrokeWidth(STROKE_WIDTH);
     }
 
-    private Handler mHandler = new Handler(){
+    private Handler mHandler = new UIHandler(this);
+    private static class UIHandler extends Handler{
+
+        WeakReference<AudioWaveView> waveViewWeakReference;
+
+        public UIHandler(AudioWaveView view) {
+            waveViewWeakReference = new WeakReference<>(view);
+        }
+
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what){
-                case MSG_UPDATE_UI:
-                    invalidate();
-                    break;
-                default:
-                    break;
+            AudioWaveView view = waveViewWeakReference.get();
+            if(null != view){
+                switch (msg.what){
+                    case MSG_UPDATE_UI:
+                        view.invalidate();
+                        break;
+                    default:
+                        break;
+                }
             }
         }
-    };
+    }
 
     public void init(Recorder recorder){
         mRecorder = recorder;
@@ -124,6 +135,9 @@ public class AudioWaveView extends View {
         if(null != mTimer){
             mTimer.cancel();
             mTimer = null;
+        }
+        if(null != mHandler){
+            mHandler.removeCallbacksAndMessages(null);
         }
     }
 

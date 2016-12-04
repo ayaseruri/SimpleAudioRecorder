@@ -27,6 +27,7 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,12 +91,12 @@ public class MainActivity extends AppCompatActivity {
         mIonRecord = new Recorder.IORecord() {
             @Override
             public void onStart() {
-                mHandler.sendEmptyMessage(MSG_RECORD_START);
+                UIHandler.sendEmptyMessage(MSG_RECORD_START);
             }
 
             @Override
             public void onRecord() {
-                mHandler.sendEmptyMessage(MSG_RECORD_ING);
+                UIHandler.sendEmptyMessage(MSG_RECORD_ING);
             }
 
             @Override
@@ -103,9 +104,9 @@ public class MainActivity extends AppCompatActivity {
                 Message message = new Message();
                 message.what = MSG_RECORD_SUCCESS;
                 setMsgData(message, info);
-                mHandler.sendMessage(message);
+                UIHandler.sendMessage(message);
 
-                mHandler.sendEmptyMessage(MSG_CONVERT_BEIGIN);
+                UIHandler.sendEmptyMessage(MSG_CONVERT_BEIGIN);
                 AndroidAudioConverter.with(MainActivity.this)
                         .setFile(new File(info.getFilePath()))
                         .setFormat(AudioFormat.FLAC)
@@ -115,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onError(Exception e) {
-                mHandler.sendEmptyMessage(MSG_RECORD_ERROR);
+                UIHandler.sendEmptyMessage(MSG_RECORD_ERROR);
             }
         };
 
@@ -129,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
                 Message message = new Message();
                 message.what = MSG_CONVERT_SUCCESS;
                 setMsgData(message, info);
-                mHandler.sendMessage(message);
+                UIHandler.sendMessage(message);
             }
             @Override
             public void onFailure(Exception error) {
@@ -190,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
                                 mRecorder.recordStart(saveFile);
                                 mAutoStopper.check(mRecorder, TIME_TO_STOP, THREADHOLD);
                             }else {
-                                mHandler.sendEmptyMessage(MSG_PERMISSION_ALERT);
+                                UIHandler.sendEmptyMessage(MSG_PERMISSION_ALERT);
                             }
                         }
                     });
@@ -228,54 +229,67 @@ public class MainActivity extends AppCompatActivity {
         message.setData(bundle);
     }
 
-    private Handler mHandler = new Handler(){
+    private Handler UIHandler = new UIHandler(this);
+
+    private static class UIHandler extends Handler{
+
+        private final WeakReference<MainActivity> activityWeakReference;
+
+        public UIHandler(MainActivity mainActivity) {
+            activityWeakReference = new WeakReference<MainActivity>(mainActivity);
+        }
+
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            RecordFileInfo info;
-            switch (msg.what){
-                case MSG_PERMISSION_ALERT:
-                    SweetAlertDialog dialog = new SweetAlertDialog(MainActivity.this, SweetAlertDialog.WARNING_TYPE);
-                    dialog.setTitleText(getString(R.string.record_permission_alert_title));
-                    dialog.setContentText(getString(R.string.record_permission_alert_detail));
-                    dialog.setConfirmText(getString(R.string.settings));
-                    dialog.setCancelText(getString(R.string.cancle));
-                    dialog.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
-                        @Override
-                        public void onClick(SweetAlertDialog sweetAlertDialog) {
-                            Utils.startAppSysSetting(MainActivity.this);
-                        }
-                    });
-                    dialog.show();
-                    break;
-                case MSG_RECORD_START:
-                    mAudioWaveView.waveStart(100);
-                    mFab.setImageResource(R.drawable.ic_record_stop);
-                    break;
-                case MSG_RECORD_ING:
-                    break;
-                case MSG_RECORD_SUCCESS:
-                    mAudioWaveView.waveStop();
-                    info = msg.getData().getParcelable(KEY_RECORD_FILE_INFO);
-                    mRecordResultView.add(info);
-                    break;
-                case MSG_RECORD_ERROR:
-                    mAudioWaveView.waveStop();
-                    break;
-                case MSG_CONVERT_BEIGIN:
-                    mFabProgress.show();
-                    break;
-                case MSG_CONVERT_SUCCESS:
-                    mFabProgress.beginFinalAnimation();
-                    info = msg.getData().getParcelable(KEY_RECORD_FILE_INFO);
-                    mRecordResultView.add(info);
-                    break;
-                case MSG_CONVERT_ERROR:
-                    Toast.makeText(MainActivity.this, R.string.conver_error, Toast.LENGTH_LONG).show();
-                    break;
-                default:
-                    break;
+            final MainActivity activity = activityWeakReference.get();
+            if(null != activity){
+                RecordFileInfo info;
+                switch (msg.what){
+                    case MSG_PERMISSION_ALERT:
+                        SweetAlertDialog dialog = new SweetAlertDialog(activity
+                                , SweetAlertDialog.WARNING_TYPE);
+                        dialog.setTitleText(activity.getString(R.string.record_permission_alert_title));
+                        dialog.setContentText(activity.getString(R.string.record_permission_alert_detail));
+                        dialog.setConfirmText(activity.getString(R.string.settings));
+                        dialog.setCancelText(activity.getString(R.string.cancle));
+                        dialog.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                            @Override
+                            public void onClick(SweetAlertDialog sweetAlertDialog) {
+                                Utils.startAppSysSetting(activity);
+                            }
+                        });
+                        dialog.show();
+                        break;
+                    case MSG_RECORD_START:
+                        activity.mAudioWaveView.waveStart(100);
+                        activity.mFab.setImageResource(R.drawable.ic_record_stop);
+                        break;
+                    case MSG_RECORD_ING:
+                        break;
+                    case MSG_RECORD_SUCCESS:
+                        activity.mAudioWaveView.waveStop();
+                        info = msg.getData().getParcelable(KEY_RECORD_FILE_INFO);
+                        activity.mRecordResultView.add(info);
+                        break;
+                    case MSG_RECORD_ERROR:
+                        activity.mAudioWaveView.waveStop();
+                        break;
+                    case MSG_CONVERT_BEIGIN:
+                        activity.mFabProgress.show();
+                        break;
+                    case MSG_CONVERT_SUCCESS:
+                        activity.mFabProgress.beginFinalAnimation();
+                        info = msg.getData().getParcelable(KEY_RECORD_FILE_INFO);
+                        activity.mRecordResultView.add(info);
+                        break;
+                    case MSG_CONVERT_ERROR:
+                        Toast.makeText(activity, R.string.conver_error, Toast.LENGTH_LONG).show();
+                        break;
+                    default:
+                        break;
+                }
             }
         }
-    };
+    }
 }

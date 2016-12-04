@@ -15,6 +15,8 @@ import android.widget.TextView;
 import com.x.simpleaudiorecorder.R;
 import com.x.simpleaudiorecorder.player.Player;
 
+import java.lang.ref.WeakReference;
+
 /**
  * Created by wufeiyang on 2016/12/1.
  */
@@ -93,27 +95,37 @@ public class PlayerDialog extends Dialog implements View.OnClickListener{
         }
     }
 
-    private Handler mHandler = new Handler(){
+    private Handler mHandler = new UIHandler(this);
+    private static class UIHandler extends Handler{
+        WeakReference<PlayerDialog> dialogWeakReference;
+
+        public UIHandler(PlayerDialog dialog) {
+            dialogWeakReference = new WeakReference<>(dialog);
+        }
+
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what){
-                case PLAY_START:
-                    mPlayBtn.setSelected(true);
-                    mSeekBar.progressInit(mPlayer);
-                    mSeekBar.progressStart();
-                    break;
-                case PLAY_PAUSE:
-                    mPlayBtn.setSelected(false);
-                    mSeekBar.progressStop();
-                    break;
-                case PLAY_COMPLETE:
-                    mPlayBtn.setSelected(false);
-                    mSeekBar.progressStop();
-                    break;
-                default:
-                    break;
+            PlayerDialog dialog = dialogWeakReference.get();
+            if(null != dialog){
+                switch (msg.what){
+                    case PLAY_START:
+                        dialog.mPlayBtn.setSelected(true);
+                        dialog.mSeekBar.progressInit(dialog.mPlayer);
+                        dialog.mSeekBar.progressStart();
+                        break;
+                    case PLAY_PAUSE:
+                        dialog.mPlayBtn.setSelected(false);
+                        dialog.mSeekBar.progressStop();
+                        break;
+                    case PLAY_COMPLETE:
+                        dialog.mPlayBtn.setSelected(false);
+                        dialog.mSeekBar.progressStop();
+                        break;
+                    default:
+                        break;
+                }
             }
         }
-    };
+    }
 }

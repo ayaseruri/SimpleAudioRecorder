@@ -2,6 +2,8 @@ package com.x.simpleaudiorecorder.autostopper;
 
 import com.x.simpleaudiorecorder.recorder.Recorder;
 
+import java.lang.ref.WeakReference;
+
 /**
  * Created by wufeiyang on 2016/12/1.
  */
@@ -20,11 +22,11 @@ public class AutoStopper {
 
     private static class Checker extends Thread{
 
-        private Recorder mRecorder;
+        private WeakReference<Recorder> mRecorderWRf;
         private int mTime, mThreadHold;
 
         public Checker(Recorder recorder,int time, int threadHold) {
-            this.mRecorder = recorder;
+            mRecorderWRf = new WeakReference<>(recorder);
             this.mTime = time;
             this.mThreadHold = threadHold;
         }
@@ -32,8 +34,9 @@ public class AutoStopper {
         @Override
         public void run() {
             long timePass = 0;
+            Recorder recorder = mRecorderWRf.get();
             do {
-                if(mRecorder.getMaxVolume() > mThreadHold){
+                if(recorder.getMaxVolume() > mThreadHold){
                     timePass = 0;
                 }else {
                     timePass += TIME_SPACE;
@@ -46,9 +49,9 @@ public class AutoStopper {
                         e.printStackTrace();
                     }
                 }else {
-                    mRecorder.recordStop();
+                    recorder.recordStop();
                 }
-            }while (null != mRecorder && mRecorder.isRecording());
+            }while (null != recorder && recorder.isRecording());
         }
     }
 }
